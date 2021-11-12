@@ -13,25 +13,27 @@ from torchtext.legacy.data import Field, TabularDataset, BucketIterator
 DATA_PATH = 'data/aclImdb/'
 TRAIN_SPLIT = 0.8
 EMBEDDING = 'glove'         # glove or fasttext
+BATCH_SIZE = 1
+DEVICE = 'cuda'
+NB_EPOCH = 10
+HIDDEN_SIZE = 1024
 
 class SentimentModel(torch.nn.Module):
 
     def __init__(self,
-                 embed_size=200,
+                 input_size,
+                 embed_size=300,
                  name='Test',
-                 device='cpu',
-                 embedding=None,
-                 sentences_length=500):
+                 device='cpu'):
         super(SentimentModel, self).__init__()
         self.name = name
         self.embed_size = embed_size
         self.device = device
         self.hidden_size = 2000
-        self.sentences_length = sentences_length
         self.nb_heads = 4  # Number of heads for multi head self attention
 
-        # Store the embedding layer: the model have to be given in parameters
-        self.embed_layer = embedding
+        # The embedding layer
+        self.embed_layer = torch.nn.Embedding(input_size, embed_size)
 
         # Bi directional LSTM layer
         self.rnn_1 = torch.nn.LSTM(embed_size,
@@ -50,16 +52,16 @@ class SentimentModel(torch.nn.Module):
                                          out_features=1)
         self.output_sm = torch.nn.Sigmoid()
 
-    def forward(self, x, mask):
+    def forward(self, x):
         # Get shapess
         N = x.size()[0]  # Batch size
         lng = x.size()[1]  # length of sequences
         # Get the embedding of inputs
         # embed_x = self.embed_layer.forward(x, get_embed=True)
         with torch.no_grad():
-            embed_x = self.embed_layer(x, mask)
+            embed_x = self.embed_layer(x)
 
-        print(len(embed_x))
+        print(embed_x.shape)
         sys.exit(0)
         # ==================================== #
         #             Encoder part             #
@@ -115,6 +117,7 @@ def train():
 
     ft_fields = {'text': ('t', text_field), 'sentiments': ('s', label_field)}
 
+    # Get datasets objects
     train, test = TabularDataset.splits(
         path='data',
         train='train.csv',
@@ -126,12 +129,42 @@ def train():
     # Build the vocabulary embedding vectors from data for fast text and glove
     print('Building vocab...')
     if EMBEDDING == 'fasttext':
-        ft_voc_vec = text_field.build_vocab(train, max_size=100000, min_freq=1, vectors='fasttext.en.300d')
+        text_field.build_vocab(train, max_size=100000, min_freq=1, vectors='fasttext.en.300d')
     if EMBEDDING == 'glove':
-        gl_voc_vec = text_field.build_vocab(train, max_size=100000, min_freq=1, vectors='glove.6B.300d')
+        text_field.build_vocab(train, max_size=100000, min_freq=1, vectors='glove.6B.300d')
     print('... Done')
 
+    # Get iterators
+    train_iterator, test_iterator = BucketIterator.splits(
+        (train, test), batch_size=BATCH_SIZE, device=DEVICE
+    )
 
+    # Get parameters for the model
+    input_size = len(text_field.vocab)
+    # Instanciate the model
+    model = SentimentModel(input_size=input_size,
+                           embed_size=300,
+                           name='Test',
+                           device=DEVICE).to(DEVICE)
+    # Load pre-trained embedding parameters
+    model.embed_layer.weight.data.copy_(text_field.vocab.vectors).to(DEVICE)
+
+
+
+    start_epoch = 0
+
+    # Epoch loop
+    for i in range(start_epoch, NB_EPOCH):
+        for step, batch in enumerate(train_iterator):
+            text = batch.t.to(DEVICE)
+            sentiment = batch.s.to(DEVICE)
+
+            pred = model(text)
+
+            print(pred)
+            print(text.shape)
+            print(sentiment)
+            sys.exit(0)
 
 
 if __name__ == '__main__':

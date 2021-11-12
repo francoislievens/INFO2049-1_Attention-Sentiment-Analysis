@@ -82,12 +82,8 @@ class SentimentModel(torch.nn.Module):
         # ==================================== #
 
         # concatenate the two final states (since bi-directional lstm)
-        if True:
-            print('Final states: {}'.format(final_h_states.shape))
-            print('hidden states: {}'.format(hid_states.shape))
         final_state = torch.cat((final_h_states[0:1, :, :], final_h_states[1:2, :, :]),
                                 dim=2)
-        print('concat shape: {}'.format(final_state.shape))
         final_state = final_state.reshape(N, -1, self.hidden_size * 2)
         # Repeat this sequence to math the sequence length
         final_state = final_state.repeat(1, lng, 1)
@@ -215,7 +211,7 @@ def train():
             pred = model(text)
 
             # Compute loss
-            loss = loss_fn(pred, sentiment)
+            loss = loss_fn(pred.flatten(), sentiment.float())
 
             # Backprop
             optimizer.zero_grad()
@@ -225,12 +221,12 @@ def train():
             # Logs
             tb.add_scalar('{}_Train'.format(MODEL_NAME), loss.item(), i)
             train_loss.append(loss.item())
-            loop.set_postfix(loss=loss.item)
+            loop.set_postfix(loss=loss.item())
 
             if step % 500 == 0:
                 torch.save(model.state_dict(), '{}/{}/model_weights.pt'.format(MODEL_PATH, MODEL_NAME))
                 torch.save(optimizer.state_dict(), '{}/{}/optimizer_weights.pt'.format(MODEL_PATH, MODEL_NAME))
-                f = open('{}/{}/train_logs.csv'.format(MODEL_PATH, MODEL_NAME))
+                f = open('{}/{}/train_logs.csv'.format(MODEL_PATH, MODEL_NAME), 'a')
                 for itm in train_loss:
                     f.write('{},{}\n'.format(i, itm))
                 f.close()
@@ -238,6 +234,7 @@ def train():
 
         torch.save(model.state_dict(), '{}/{}/model_weights.pt'.format(MODEL_PATH, MODEL_NAME))
         torch.save(optimizer.state_dict(), '{}/{}/optimizer_weights.pt'.format(MODEL_PATH, MODEL_NAME))
+        f = open('{}/{}/train_logs.csv'.format(MODEL_PATH, MODEL_NAME), 'a')
         for itm in train_loss:
             f.write('{},{}\n'.format(i, itm))
         f.close()
@@ -262,15 +259,15 @@ def train():
             # Logs
             tb.add_scalar('{}_Test'.format(MODEL_NAME), loss.item(), i)
             test_loss.append(loss.item())
-            loop.set_postfix(loss=loss.item)
+            loop.set_postfix(loss=loss.item())
 
             if step % 500 == 0:
-                f = open('{}/{}/test_logs.csv'.format(MODEL_PATH, MODEL_NAME))
+                f = open('{}/{}/test_logs.csv'.format(MODEL_PATH, MODEL_NAME), 'a')
                 for itm in test_loss:
                     f.write('{},{}\n'.format(i, itm))
                 f.close()
                 test_loss = []
-        f = open('{}/{}/test_logs.csv'.format(MODEL_PATH, MODEL_NAME))
+        f = open('{}/{}/test_logs.csv'.format(MODEL_PATH, MODEL_NAME), 'a')
         for itm in test_loss:
             f.write('{},{}\n'.format(i, itm))
         f.close()

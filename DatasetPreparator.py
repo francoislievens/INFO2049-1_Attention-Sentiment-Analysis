@@ -91,27 +91,23 @@ if __name__ == '__main__':
 
     train, test = TabularDataset.splits(
         path='data',
-        train='train_bis.csv',
-        test='test_bis.csv',
+        train='train.csv',
+        test='test.csv',
         format='csv',
         fields=ft_fields
     )
 
     # Build the vocabulary embedding vectors from data for fast text and glove
     print('Building vocab...')
-    ft_voc_vec = text_field.build_vocab(train, max_size=10000, min_freq=1, vectors='fasttext.en.300d')
-    gl_voc_vec = text_field.build_vocab(train, max_size=10000, min_freq=1, vectors='glove.6B.300d')
+    ft_voc_vec = text_field.build_vocab(train, max_size=100000, min_freq=1, vectors='fasttext.en.300d')
+    gl_voc_vec = text_field.build_vocab(train, max_size=100000, min_freq=1, vectors='glove.6B.300d')
 
-    # pickl all
-    with open('data/train.pkl', 'wb') as f:
-        pickle.dump(train, f)
-    with open('data/test.pkl', 'wb') as f:
-        pickle.dump(test, f)
+    # Pickle embedding dic
     with open('data/fasttext.pkl', 'wb') as f:
         pickle.dump(ft_voc_vec, f)
     with open('data/glove.pkl', 'wb') as f:
         pickle.dump(gl_voc_vec, f)
-    print('check')
+
 
 
 

@@ -18,8 +18,8 @@ BATCH_SIZE = 10
 DEVICE = 'cuda'
 NB_EPOCH = 10
 HIDDEN_SIZE = 1024
-LEARNING_RATE = 1e-4
-MODEL_NAME = 'Glove_Test'
+LEARNING_RATE = 5e-6
+MODEL_NAME = 'Glove_Test_2'
 
 class SentimentModel(torch.nn.Module):
 
@@ -33,7 +33,6 @@ class SentimentModel(torch.nn.Module):
         self.embed_size = embed_size
         self.device = device
         self.hidden_size = HIDDEN_SIZE
-        self.nb_heads = 4  # Number of heads for multi head self attention
 
         # The embedding layer
         self.embed_layer = torch.nn.Embedding(input_size, embed_size)
@@ -55,11 +54,24 @@ class SentimentModel(torch.nn.Module):
                                          out_features=1)
         self.output_sm = torch.nn.Sigmoid()
 
+        # Weights init
+
+        for name, param in self.rnn_1.named_parameters():
+            if 'weight_ih' in name:
+                torch.nn.init.xavier_uniform_(param.data)
+            elif 'weight_hh' in name:
+                torch.nn.init.orthogonal_(param.data)
+            elif 'bias':
+                param.data.fill_(0)
+        torch.nn.init.xavier_uniform_(self.energy.weight)
+        torch.nn.init.xavier_uniform_(self.output_fc.weight)
+
     def forward(self, x):
 
         # Get the embedding of inputs
         # embed_x = self.embed_layer.forward(x, get_embed=True)
-        embed_x = self.embed_layer(x)
+        with torch.no_grad():
+            embed_x = self.embed_layer(x)
         # Get batch on the first dim
         embed_x = embed_x.permute(1, 0, 2)
 

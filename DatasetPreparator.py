@@ -91,47 +91,28 @@ if __name__ == '__main__':
 
     train, test = TabularDataset.splits(
         path='data',
-        train='train.csv',
-        test='test.csv',
+        train='train_bis.csv',
+        test='test_bis.csv',
         format='csv',
         fields=ft_fields
     )
 
     # Build the vocabulary embedding vectors from data for fast text and glove
+    print('Building vocab...')
     ft_voc_vec = text_field.build_vocab(train, max_size=10000, min_freq=1, vectors='fasttext.en.300d')
     gl_voc_vec = text_field.build_vocab(train, max_size=10000, min_freq=1, vectors='glove.6B.300d')
 
+    # pickl all
+    with open('data/train.pkl', 'wb') as f:
+        pickle.dump(train, f)
+    with open('data/test.pkl', 'wb') as f:
+        pickle.dump(test, f)
+    with open('data/fasttext.pkl', 'wb') as f:
+        pickle.dump(ft_voc_vec, f)
+    with open('data/glove.pkl', 'wb') as f:
+        pickle.dump(gl_voc_vec, f)
     print('check')
-    sys.exit(0)
 
 
 
 
-
-
-
-"""
-    # ================================== #
-    #       For Glove                    #
-    # ================================== #
-
-    # Use fields
-    go_text_field = Field(
-        tokenize='basic_english',
-        lower=True
-    )
-    go_label_field = Field(sequential=False, use_vocab=False)
-
-    # Preprocess data:
-    go_preprocessed = df['text'].apply(lambda x: go_text_field.preprocess(x))
-
-    # Load fast text 300d
-    go_text_field.build_vocab(
-        go_preprocessed,
-        vectors='glove.6B.300d'
-    )
-
-    # Get the vocab
-    go_vocab = go_text_field.vocab      # Can be used as a dic with the word we search as key
-
-"""

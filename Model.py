@@ -7,8 +7,12 @@ import math
 import pandas as pd
 from tqdm import tqdm
 from torch.utils.tensorboard import SummaryWriter
-from transformers import BertTokenizer, BertModel
+from DatasetPreparator import prepare_csv
+from torchtext.legacy.data import Field, TabularDataset, BucketIterator
 
+DATA_PATH = 'data/aclImdb/'
+TRAIN_SPLIT = 0.8
+EMBEDDING = 'glove'         # glove or fasttext
 
 class SentimentModel(torch.nn.Module):
 
@@ -98,9 +102,34 @@ class SentimentModel(torch.nn.Module):
 
 
 def train():
+    # If csv file not already prepared:
+    if not os.path.exists('data/train.csv'):
+        prepare_csv()
 
-    pass
+    # Prepare fields
+    text_field = Field(
+        tokenize='basic_english',
+        lower=True
+    )
+    label_field = Field(sequential=False, use_vocab=False)
 
+    ft_fields = {'text': ('t', text_field), 'sentiments': ('s', label_field)}
+
+    train, test = TabularDataset.splits(
+        path='data',
+        train='train.csv',
+        test='test.csv',
+        format='csv',
+        fields=ft_fields
+    )
+
+    # Build the vocabulary embedding vectors from data for fast text and glove
+    print('Building vocab...')
+    if EMBEDDING == 'fasttext':
+        ft_voc_vec = text_field.build_vocab(train, max_size=100000, min_freq=1, vectors='fasttext.en.300d')
+    if EMBEDDING == 'glove':
+        gl_voc_vec = text_field.build_vocab(train, max_size=100000, min_freq=1, vectors='glove.6B.300d')
+    print('... Done')
 
 
 

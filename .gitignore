@@ -6,3 +6,6 @@
 *.vec
 *.vocab
 *.feat
+tweete/
+tweet_test.csv
+tweet_train.csv

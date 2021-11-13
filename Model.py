@@ -13,13 +13,13 @@ from torchtext.legacy.data import Field, TabularDataset, BucketIterator
 DATA_PATH = 'data/aclImdb/'
 MODEL_PATH = 'model'
 TRAIN_SPLIT = 0.8
-EMBEDDING = 'glove'         # glove or fasttext
+EMBEDDING = 'fasttext'         # glove or fasttext
 BATCH_SIZE = 10
 DEVICE = 'cuda'
 NB_EPOCH = 50
 HIDDEN_SIZE = 1024
 LEARNING_RATE = 5e-6
-MODEL_NAME = 'Glove_Test_3'
+MODEL_NAME = 'FastText_Test_1'
 
 class SentimentModel(torch.nn.Module):
 

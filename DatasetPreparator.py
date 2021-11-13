@@ -71,42 +71,10 @@ def prepare_csv():
 
 if __name__ == '__main__':
 
-    # If csv file not already prepared:
-    if not os.path.exists('data/train.csv'):
-        prepare_csv()
+    prepare_csv()
 
 
-    # ================================== #
-    #       For Fast Text                #
-    # ================================== #
 
-    # Prepare fields
-    text_field = Field(
-        tokenize='basic_english',
-        lower=True
-    )
-    label_field = Field(sequential=False, use_vocab=False)
-
-    ft_fields = {'text': ('t', text_field), 'sentiments': ('s', label_field)}
-
-    train, test = TabularDataset.splits(
-        path='data',
-        train='train.csv',
-        test='test.csv',
-        format='csv',
-        fields=ft_fields
-    )
-
-    # Build the vocabulary embedding vectors from data for fast text and glove
-    print('Building vocab...')
-    ft_voc_vec = text_field.build_vocab(train, max_size=100000, min_freq=1, vectors='fasttext.en.300d')
-    gl_voc_vec = text_field.build_vocab(train, max_size=100000, min_freq=1, vectors='glove.6B.300d')
-
-    # Pickle embedding dic
-    with open('data/fasttext.pkl', 'wb') as f:
-        pickle.dump(ft_voc_vec, f)
-    with open('data/glove.pkl', 'wb') as f:
-        pickle.dump(gl_voc_vec, f)
 
 
 

@@ -16,10 +16,10 @@ TRAIN_SPLIT = 0.8
 EMBEDDING = 'glove'         # glove or fasttext
 BATCH_SIZE = 10
 DEVICE = 'cuda'
-NB_EPOCH = 10
+NB_EPOCH = 50
 HIDDEN_SIZE = 1024
 LEARNING_RATE = 5e-6
-MODEL_NAME = 'Glove_Test_2'
+MODEL_NAME = 'Glove_Test_3'
 
 class SentimentModel(torch.nn.Module):
 
@@ -228,6 +228,8 @@ def train():
             # Backprop
             optimizer.zero_grad()
             loss.backward()
+            # Gradient clipping
+            torch.nn.utils.clip_grad_norm_(model.parameters(), 0.1)
             optimizer.step()
 
             # Logs
@@ -252,6 +254,8 @@ def train():
         f.close()
 
         # Test loop
+
+        """
         print('Testing epoch {} / {}'.format(i, NB_EPOCH))
         loop = tqdm(test_iterator, leave=True)
         test_loss = []
@@ -283,6 +287,7 @@ def train():
         for itm in test_loss:
             f.write('{},{}\n'.format(i, itm))
         f.close()
+        """
 
 if __name__ == '__main__':
 

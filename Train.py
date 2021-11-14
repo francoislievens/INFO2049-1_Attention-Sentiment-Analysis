@@ -129,7 +129,7 @@ def train(parameters):
 
         # Test loop
 
-        print('Testing epoch {} / {}'.format(i, NB_EPOCH))
+        print('Testing epoch {} / {}'.format(i, p['epoch']))
         loop = tqdm(test_iterator, leave=True)
         test_loss = []
         test_accuracy = []
@@ -177,6 +177,26 @@ def accuracy(pred, target):
 if __name__ == '__main__':
 
     parameters = [{
+        'name': 'GRU_glove',
+        'embedding': 'glove',
+        'epoch': 1,
+        'rnn_type': 'GRU'
+    }, {
+        'name': 'GRU_fasttext',
+        'embedding': 'fasttext',
+        'epoch': 1,
+        'rnn_type': 'GRU'
+    }, {
+        'name': 'LSTM_glove',
+        'embedding': 'glove',
+        'epoch': 1,
+        'rnn_type': 'LSTM'
+    }, {
+        'name': 'LSTM_fasttext',
+        'embedding': 'fasttext',
+        'epoch': 1,
+        'rnn_type': 'LSTM'
+    }, {
         'name': 'LSTM_glove',
         'embedding': 'glove',
         'epoch': 5,

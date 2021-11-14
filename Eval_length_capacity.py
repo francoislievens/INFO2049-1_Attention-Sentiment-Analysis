@@ -72,6 +72,8 @@ def eval_length_capacity(params):
     loop = tqdm(iterator)
     model.eval()
 
+    save_length_logs([], [], [], 'model', p['name'])
+
     tot_lngts = []
     tot_loss = []
     tot_acc = []
@@ -89,11 +91,12 @@ def eval_length_capacity(params):
             loss = loss_fn(pred.flatten(), sentiment.float())
             acc = accuracy(pred.flatten(), sentiment)
             avg_lng = torch.mean(lngts.type(torch.FloatTensor))
-            tot_lngts.append(loss.cpu().detach().item())
+            tot_loss.append(loss.cpu().detach().item())
             tot_lngts.append(avg_lng.cpu().detach().item())
             tot_acc.append(acc.cpu().detach().item())
 
-    save_length_logs(tot_lngts, tot_loss, tot_acc, '/model', p['name'])
+
+    save_length_logs(tot_lngts, tot_loss, tot_acc, 'model', p['name'])
 
 
 

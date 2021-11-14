@@ -180,12 +180,7 @@ def accuracy(pred, target):
 
 if __name__ == '__main__':
 
-    train({'name': 'LSTM_glove_a',
-           'embedding': 'glove',
-           'epoch': 2,
-           'rnn_type': 'LSTM',
-           'use_attention': True})
-    sys.exit(0)
+
     parameters = [{
         'name': 'GRU_glove',
         'embedding': 'glove',
@@ -229,6 +224,7 @@ if __name__ == '__main__':
     }
     ]
 
+    parameters
     for prm in parameters:
         print('* --------------------------------------- *')
         print('*      Starting training {}'.format(prm['name']))

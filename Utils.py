@@ -83,5 +83,5 @@ def save_length_logs(lgts, loss, accuracy, model_path, model_name):
         f.write('{},{},{}\n'.format(lgts[i],
                                     loss[i],
                                     accuracy[i]))
-        f.close()
+    f.close()
 

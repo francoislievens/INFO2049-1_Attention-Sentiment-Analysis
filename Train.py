@@ -8,6 +8,7 @@ from Utils import evaluator, load_model, save_model, save_logs
 from CreateVocab import prepare_vocab, load_vocab
 from config import *
 from SentimentModel import SentimentModel
+import sys
 
 
 
@@ -58,7 +59,8 @@ def train(parameters):
                            embed_size=300,
                            name=p['name'],
                            device=DEVICE,
-                           rnn_type=p['rnn_type']).to(DEVICE)
+                           rnn_type=p['rnn_type'],
+                           use_attention=p['use_attention']).to(DEVICE)
     # Load pre-trained embedding parameters
     model.embed_layer.weight.data.copy_(text_field.vocab.vectors).to(DEVICE)
 
@@ -94,7 +96,6 @@ def train(parameters):
                 pred, attention = model.forward(text, return_att=True)
             else:
                 pred = model(text)
-
             # Compute loss
             loss = loss_fn(pred.flatten(), sentiment.float())
 
@@ -108,6 +109,10 @@ def train(parameters):
 
             # Compute accuracy:
             acc = accuracy(pred.flatten(), sentiment)
+
+            if EVAL:
+                evaluator(text, text_field.vocab, pred, attention, sentiment)
+
             # Logs
             tb.add_scalar('{}_Train_loss'.format(p['name']), loss.item(), i)
             tb.add_scalar('{}_Train_accuracy'.format(p['name']), acc.item(), i)
@@ -115,8 +120,7 @@ def train(parameters):
             train_accuracy.append(acc.item())
             loop.set_postfix(loss=loss.item())
 
-            if EVAL:
-                evaluator(text, text_field.vocab, pred, attention, sentiment)
+
 
             if step % 500 == 0:
                 save_model(model, optimizer, MODEL_PATH, p['name'])
@@ -176,6 +180,12 @@ def accuracy(pred, target):
 
 if __name__ == '__main__':
 
+    train({'name': 'LSTM_glove_a',
+           'embedding': 'glove',
+           'epoch': 2,
+           'rnn_type': 'LSTM',
+           'use_attention': True})
+    sys.exit(0)
     parameters = [{
         'name': 'GRU_glove',
         'embedding': 'glove',

@@ -4,6 +4,7 @@ import sys
 import gensim
 from tqdm import tqdm
 import torch
+import numpy as np
 
 def prepare_vocab(method='fasttext'):
     """
@@ -51,7 +52,7 @@ def prepare_vocab(method='fasttext'):
         wtv_vectors = []
         for token, idx in tqdm(ft_vocab.stoi.items()):
             if token in wtv_gensim.key_to_index.keys():
-                wtv_vectors.append(torch.FloatTensor(wtv_gensim[token]))
+                wtv_vectors.append(torch.FloatTensor(np.copy(wtv_gensim[token])))
             else:
                 wtv_vectors.append(torch.zeros(300))
         ft_vocab.set_vectors(ft_vocab.stoi, wtv_vectors, 300)

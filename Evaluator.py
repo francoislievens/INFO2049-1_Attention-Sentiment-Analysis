@@ -8,10 +8,11 @@ from SentimentModel import SentimentModel
 from Utils import load_model
 from CreateVocab import load_vocab, prepare_vocab
 
-MODEL_NAME = 'LSTM_FastText_tweet'
-DEVICE = 'cpu'
-EMBEDDING = 'word2vec'
+MODEL_NAME = 'LSTM_glove_na'
+DEVICE = 'cuda'
+EMBEDDING = 'glove'
 MODEL_PATH = 'model'
+USE_ATTENTION = False
 FT_INPUT_SIZE = 100002
 EMBED_SIZE = 300
 
@@ -58,7 +59,8 @@ if __name__ == '__main__':
     model = SentimentModel(input_size=inpt_size,
                            embed_size=300,
                            name=MODEL_NAME,
-                           device=DEVICE).to(DEVICE)
+                           device=DEVICE,
+                           use_attention=USE_ATTENTION).to(DEVICE)
     # Load existing weights
     load_model(model,
                optimizer=None,
@@ -82,8 +84,9 @@ if __name__ == '__main__':
     for itm in text.examples:
         print(' ======================================================================= ')
 
-        txt = list(itm.t)
-        for k in range(10):
+        txt = ['<unk>']
+        txt = txt + list(itm.t)
+        for k in range(5):
             txt.append('<pad>')
         # Get indexes using the vocab
         txt_idx = []
@@ -93,9 +96,9 @@ if __name__ == '__main__':
         txt_idx_tensor = torch.tensor(txt_idx).reshape(1, -1)
         with torch.no_grad():
             pred, att = model.forward(txt_idx_tensor.to(DEVICE), return_att=True)
+
         pred.cpu().numpy()
         att = att.flatten().cpu().numpy()
-
         print('prediction:  {}'.format(pred.item()))
         for i in range(0, len(att)):
             print('{} - {} - {} - {} '.format(i, txt[i], txt_idx[i], att[i]))

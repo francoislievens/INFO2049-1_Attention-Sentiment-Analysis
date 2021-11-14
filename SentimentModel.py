@@ -1,5 +1,6 @@
 import torch
 from config import *
+import sys
 
 
 class SentimentModel(torch.nn.Module):
@@ -9,8 +10,10 @@ class SentimentModel(torch.nn.Module):
                  embed_size=300,
                  name='Test',
                  device='cpu',
-                 rnn_type='LSTM'):
+                 rnn_type='LSTM',
+                 use_attention=True):
         super(SentimentModel, self).__init__()
+        self.use_attention = use_attention
         self.name = name
         self.embed_size = embed_size
         self.device = device
@@ -40,12 +43,15 @@ class SentimentModel(torch.nn.Module):
         self.energy_relu = torch.nn.ReLU()
         self.energy_2 = torch.nn.Linear(in_features=self.hidden_size,
                                         out_features=1)
-        self.energy_sm = torch.nn.Softmax(dim=0)
+        self.energy_sm = torch.nn.Softmax(dim=1)
 
         # output layer
-        self.output_fc = torch.nn.Linear(in_features=self.hidden_size * 2,
-                                         out_features=1)
-        self.output_sm = torch.nn.Sigmoid()
+        self.output_fc_A = torch.nn.Linear(in_features=self.hidden_size * 2,
+                                           out_features=self.hidden_size)
+        self.output_relu = torch.nn.ReLU()
+        self.output_fc_B = torch.nn.Linear(in_features=self.hidden_size,
+                                           out_features=1)
+        self.output_sig = torch.nn.Sigmoid()
 
         # Weights init
 
@@ -58,7 +64,7 @@ class SentimentModel(torch.nn.Module):
                 param.data.fill_(0)
         torch.nn.init.xavier_uniform_(self.energy_1.weight)
         torch.nn.init.xavier_uniform_(self.energy_2.weight)
-        torch.nn.init.xavier_uniform_(self.output_fc.weight)
+        torch.nn.init.xavier_uniform_(self.output_fc_A.weight)
 
     def forward(self, x, return_att=False):
 
@@ -66,9 +72,7 @@ class SentimentModel(torch.nn.Module):
         # embed_x = self.embed_layer.forward(x, get_embed=True)
         with torch.no_grad():
             embed_x = self.embed_layer(x)
-        if EVAL:
-            for i in range(0, embed_x[0].shape[0]):
-                print(embed_x[0, i, 0:10])
+
         # Get shapess
         N = embed_x.size()[0]  # Batch size
         lng = embed_x.size()[1]  # length of sequences
@@ -88,7 +92,7 @@ class SentimentModel(torch.nn.Module):
         # ==================================== #
 
         # concatenate the two final states (since bi-directional lstm)
-        #final_state = torch.cat((final_h_states[0:1, :, :], final_h_states[1:2, :, :]),
+        # final_state = torch.cat((final_h_states[0:1, :, :], final_h_states[1:2, :, :]),
         #                        dim=2)
         final_state = torch.cat((hid_states[:, -1:, self.hidden_size:],
                                  hid_states[:, 0:1, 0:self.hidden_size]),
@@ -103,19 +107,30 @@ class SentimentModel(torch.nn.Module):
         att = self.energy_1(att_states.reshape(N * lng, self.hidden_size * 4 + self.embed_size))
         att = self.energy_relu(att)
         att = self.energy_2(att)
+
+        # Reshape the outputs per sequences length
+        att = att.reshape(N, lng)
+
         # Apply the softmax to get attention weights vector
         att = self.energy_sm(att)
-        # Reshape the outputs per sequences length
+
+        # Reshape for the weighted average
         att = att.reshape(N, lng, 1)
+
+        # Use equal weights if no attention
+        if not self.use_attention:
+            att = torch.ones(att.shape).to(self.device) / att.shape[1]
 
         # Apply attention weights on hidden states
         context = torch.einsum('nsk,nsl->nkl', att, hid_states).reshape(N, self.hidden_size * 2)
 
         # Apply the prediction layer
-        output = self.output_fc(context)
-        output = self.output_sm(output)
+        output = self.output_fc_A(context)
+        output = self.output_relu(output)
+        output = self.output_fc_B(output)
+        output = self.output_sig(output)
 
         if return_att:
-            return output, att
+            return output, att.reshape(N, -1)
 
         return output

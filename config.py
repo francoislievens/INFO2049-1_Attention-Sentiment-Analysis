@@ -1,0 +1,8 @@
+
+HIDDEN_SIZE = 1024
+LEARNING_RATE = 1e-4
+BATCH_SIZE = 30
+EVAL = False
+DATA_PATH = 'data/aclImdb/'
+MODEL_PATH = 'model'
+DEVICE = 'cuda'

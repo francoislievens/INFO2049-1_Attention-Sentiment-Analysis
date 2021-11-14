@@ -78,11 +78,11 @@ def prepare_csv():
 def tweete_preparation(path="data/tweete/training.1600000.processed.noemoticon.csv"):
     header = ["sentiments", "The id of the tweet",
               "date", "query", "the user that tweeted", "tweet"]
-    data_tweet = pd.read_csv(path, names=header)
+    data_tweet = pd.read_csv(path, names=header, encoding='latin')
 
-    for i in range(0, len(data_tweet)):
-        if data_tweet["sentiments"][i] == 4:
-            data_tweet["sentiments"][i] == 1
+    data_tweet['sentiments'] = data_tweet['sentiments'] / 4
+
+    data_tweet = data_tweet.astype({'sentiments': int})
 
     sentiments = np.array(data_tweet["sentiments"])
     tweet = np.array(data_tweet["tweet"])

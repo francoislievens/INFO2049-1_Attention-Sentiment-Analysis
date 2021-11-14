@@ -18,6 +18,7 @@ def evaluator(token_idx, vocab, pred, attention, target):
         # Print results:
         print(' ========================== ')
         print('Final positivity: {}'.format(pred[i].item()))
+        print('Attention sum: {}'.format(torch.sum(attention[i]).detach().cpu().numpy()))
         print('Target: {}'.format(target[i].item()))
         for j in range(0, len(tok_idx)):
             print('{} - {} - {}'.format(tok_idx[j],
@@ -69,5 +70,18 @@ def save_logs(epoch, loss, accuracy, model_path, model_name, type='train'):
     f = open('{}/{}/{}_logs.csv'.format(model_path, model_name, type), 'a')
     for i in range(0, len(loss)):
         f.write('{},{},{}\n'.format(epoch, loss[i], accuracy[i]))
+    f.close()
+
+def save_length_logs(lgts, loss, accuracy, model_path, model_name):
+
+    if not os.path.exists('{}/{}/lngts_logs.csv'.format(model_path, model_name)):
+        f = open('{}/{}/lngts_logs.csv'.format(model_path, model_name), 'w')
+        f.write('length,loss,accuracy\n')
+        f.close()
+    f = open('{}/{}/lngts_logs.csv'.format(model_path, model_name), 'a')
+    for i in range(0, len(lgts)):
+        f.write('{},{},{}\n'.format(lgts[i],
+                                    loss[i],
+                                    accuracy[i]))
     f.close()
 

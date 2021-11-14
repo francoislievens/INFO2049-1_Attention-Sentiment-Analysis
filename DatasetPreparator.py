@@ -5,6 +5,7 @@ import pickle
 import sys
 import torchtext
 from torchtext.legacy.data import Field, TabularDataset, BucketIterator
+from tqdm import tqdm
 
 
 DATA_PATH = 'data/aclImdb/'
@@ -88,8 +89,45 @@ def tweete_preparation(path="data/tweete/training.1600000.processed.noemoticon.c
     tweet = np.array(data_tweet["tweet"])
     shuffle_data(tweet, sentiments, "tweet")
 
+def prepare_large_movie_data():
+
+    # Load the serialized dataset
+    with open('data/LargeMovieV1/largemovie.pkl', 'rb') as f:
+        text, encoded_batch, sentiments = pickle.load(f)
+
+    # Build a length array:
+    lgt = []
+    for i in range(len(text)):
+        lgt.append(len(text[i]))
+        if i > 10000:
+            break
+    lgt = np.array(lgt)
+    idx_array = np.arange(len(lgt))
+
+    # Shuffle index
+    idx_len = np.zeros((len(idx_array), 2))
+    idx_len[:, 0] = idx_array
+    idx_len[:, 1] = lgt
+
+    # Sort by length
+    idx_len = idx_len[np.argsort(idx_len[:, 1])]
+
+    # Build a data csv file sorted by length
+    outputs = []
+    for i in range(0, idx_len.shape[0]):
+        outputs.append('{},{},{}\n'.format(text[int(idx_len[i, 0])].replace(',', ' '),
+                                         int(sentiments[int(idx_len[i, 0])]),
+                                         int(idx_len[i, 1])))
+
+    # Write in a file
+    f = open('data/LargeMovieV1/by_length.csv', 'w', encoding='utf-8')
+    f.write('text,sentiments,length\n')
+    for i in tqdm(range(0, len(outputs))):
+        f.write(outputs[i])
+    f.close()
 
 if __name__ == '__main__':
-    tweete_preparation()
+    # tweete_preparation()
 
     # prepare_csv()
+    prepare_large_movie_data()

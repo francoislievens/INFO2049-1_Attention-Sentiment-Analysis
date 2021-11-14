@@ -12,3 +12,4 @@ tweet_train.csv
 *.vectors
 *.gz
 plot/model
+*.pkl

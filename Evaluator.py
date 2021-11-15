@@ -7,14 +7,18 @@ import sys
 from SentimentModel import SentimentModel
 from Utils import load_model
 from CreateVocab import load_vocab, prepare_vocab
+from Ploter import plot_words_attention
 
-MODEL_NAME = 'LSTM_glove_na'
+MODEL_NAME = 'LSTM_glove_a'
 DEVICE = 'cuda'
-EMBEDDING = 'glove'
+EMBEDDING = 'fasttext'
 MODEL_PATH = 'model'
-USE_ATTENTION = False
+USE_ATTENTION = True
 FT_INPUT_SIZE = 100002
 EMBED_SIZE = 300
+PLOT = True
+SHOW_PLOT = False
+SAVE_PLOT = True
 
 if __name__ == '__main__':
 
@@ -81,6 +85,7 @@ if __name__ == '__main__':
     #print(text_field.vocab.stoi.items())
     #print(text_field.vocab.stoi['it'])
 
+    idx = 0
     for itm in text.examples:
         print(' ======================================================================= ')
 
@@ -102,6 +107,9 @@ if __name__ == '__main__':
         print('prediction:  {}'.format(pred.item()))
         for i in range(0, len(att)):
             print('{} - {} - {} - {} '.format(i, txt[i], txt_idx[i], att[i]))
+
+        plot_words_attention(txt, att, save_fig=SAVE_PLOT, show_fig=SHOW_PLOT, idx=idx)
+        idx += 1
 
 
 

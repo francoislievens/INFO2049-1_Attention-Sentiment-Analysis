@@ -5,8 +5,8 @@ from pandas.core import series
 import os
 import time
 
-SHOW_FIG = True
-SAVE_FIG = False
+SHOW_FIG = False
+SAVE_FIG = True
 MAX_EPOCH = 3
 LAST_EPOCH_IDX = 2
 
@@ -14,8 +14,8 @@ LAST_EPOCH_IDX = 2
 def plot_model(model_name, show_name):
 
     # # Check if length evaluation data available:
-    # if os.path.exists('model/{}/lngts_logs.csv'.format(model_name)):
-    #     plot_length_influence(model_name, show_name)
+    if os.path.exists('model/{}/lngts_logs.csv'.format(model_name)):
+        plot_length_influence(model_name, show_name)
 
     # Chek if training data available:
     if os.path.exists('model/{}/train_logs.csv'.format(model_name)):
@@ -216,38 +216,258 @@ def compare_all_models(models):
         df_train = pd.read_csv('model/{}/train_logs.csv'.format(mdl[0]))
         df_test = pd.read_csv('model/{}/test_logs.csv'.format(mdl[0]))
         # Select last epoch values
-        df_train = df_train[df_train['epoch'] >= LAST_EPOCH_IDX]
-        df_test = df_test[df_test['epoch'] >= LAST_EPOCH_IDX]
+        df_train = df_train[df_train['Epoch'] >= LAST_EPOCH_IDX]
+        df_test = df_test[df_test['Epoch'] >= LAST_EPOCH_IDX]
         # Get average and standard deviation
         avg_train_loss.append(np.mean(df_train['loss'].to_numpy()))
-        std_train_loss.append(np.std(df_train['loss'].to_numpy()))
+        std_train_loss.append(np.std(df_train['loss'].to_numpy())/2)
         avg_train_acc.append(np.mean(df_train['accuracy'].to_numpy()))
-        std_train_acc.append(np.std(df_train['accuracy'].to_numpy()))
+        std_train_acc.append(np.std(df_train['accuracy'].to_numpy())/2)
         avg_test_loss.append(np.mean(df_test['loss'].to_numpy()))
-        std_test_loss.append(np.std(df_test['loss'].to_numpy()))
+        std_test_loss.append(np.std(df_test['loss'].to_numpy())/2)
         avg_test_acc.append(np.mean(df_test['accuracy'].to_numpy()))
-        std_test_acc.append(np.std(df_test['accuracy'].to_numpy()))
+        std_test_acc.append(np.std(df_test['accuracy'].to_numpy())/2)
 
         # For long sequences evaluation
         df_lgt = pd.read_csv('model/{}/lngts_logs.csv'.format(mdl[0]))
         # Sort by length
-        df_lgt = df_lgt.sort_values(by=['length']).numpy()
+        df_lgt = df_lgt.sort_values(by=['length']).to_numpy()
         # Get 1000 longest
         df_lgt = df_lgt[-1000:, :]
-        print('Average length: {}'.format(np.mean(df_lgt[:, 0])))
+
         # Get average and std values
         avg_ls_loss.append(np.mean(df_lgt[:, 1]))
-        std_ls_loss.append(np.std(df_lgt[:, 1]))
+        std_ls_loss.append(np.std(df_lgt[:, 1])/2)
         avg_ls_acc.append(np.mean(df_lgt[:, 2]))
-        std_ls_acc.append(np.std(df_lgt[:, 2]))
+        std_ls_acc.append(np.std(df_lgt[:, 2])/2)
+
+    # Barplot
+    mod_names = []
+    for mdl in models:
+        mod_names.append(mdl[2])
+
+    # accuracy bar plot
+    plt.rcdefaults()
+    fig, ax = plt.subplots()
+    y_pos = np.arange(len(avg_train_acc))
+    values = avg_train_acc
+    error = std_train_acc
+
+    ax.barh(y_pos, values, xerr=error, align='center')
+    ax.set_yticks(y_pos)
+    ax.set_yticklabels(mod_names)
+    ax.invert_yaxis()
+    ax.set_xlabel('Average train accuracy')
+    ax.set_title('Average train accuracy \n'
+                 'on epoch 3')
+    ax.set_xlim([0.7, 1])
+    plt.grid()
+    if SHOW_FIG:
+        plt.show()
+    if SAVE_FIG:
+        plt.savefig('ComparisonPlots/train_acc.png')
+    plt.close()
+
+    # test accuracy bar plot
+    plt.rcdefaults()
+    fig, ax = plt.subplots()
+    y_pos = np.arange(len(avg_train_acc))
+    values = avg_test_acc
+    error = std_test_acc
+
+    ax.barh(y_pos, values, xerr=error, align='center')
+    ax.set_yticks(y_pos)
+    ax.set_yticklabels(mod_names)
+    ax.invert_yaxis()
+    ax.set_xlabel('Average test accuracy')
+    ax.set_title('Average test accuracy \n'
+                 'on epoch 3')
+    ax.set_xlim([0.7, 1])
+    plt.grid()
+    if SHOW_FIG:
+        plt.show()
+    if SAVE_FIG:
+        plt.savefig('ComparisonPlots/test_acc.png')
+    plt.close()
+
+    # loss test bar plot
+    plt.rcdefaults()
+    fig, ax = plt.subplots()
+    y_pos = np.arange(len(avg_train_acc))
+    values = avg_test_loss
+    error = std_test_loss
+
+    ax.barh(y_pos, values, xerr=error, align='center')
+    ax.set_yticks(y_pos)
+    ax.set_yticklabels(mod_names)
+    ax.invert_yaxis()
+    ax.set_xlabel('Average test loss')
+    ax.set_title('Average test loss \n'
+                 'on epoch 3')
+    ax.set_xlim([0.06, 0.165])
+    plt.grid()
+    if SHOW_FIG:
+        plt.show()
+    if SAVE_FIG:
+        plt.savefig('ComparisonPlots/test_loss.png')
+    plt.close()
+
+    # loss train bar plot
+    plt.rcdefaults()
+    fig, ax = plt.subplots()
+    y_pos = np.arange(len(avg_train_acc))
+    values = avg_train_loss
+    error = std_train_loss
+
+    ax.barh(y_pos, values, xerr=error, align='center')
+    ax.set_yticks(y_pos)
+    ax.set_yticklabels(mod_names)
+    ax.invert_yaxis()
+    ax.set_xlabel('Average train loss')
+    ax.set_title('Average train loss \n'
+                 'on epoch 3')
+    ax.set_xlim([0.06, 0.165])
+    plt.grid()
+    if SHOW_FIG:
+        plt.show()
+    if SAVE_FIG:
+        plt.savefig('ComparisonPlots/train_loss.png')
+    plt.close()
+
+    # long sec loss test bar plot
+    plt.rcdefaults()
+    fig, ax = plt.subplots()
+    y_pos = np.arange(len(avg_train_acc))
+    values = avg_ls_loss
+    error = std_ls_loss
+
+    ax.barh(y_pos, values, xerr=error, align='center')
+    ax.set_yticks(y_pos)
+    ax.set_yticklabels(mod_names)
+    ax.invert_yaxis()
+    ax.set_xlabel('Average loss')
+    ax.set_title('Average loss on long sequences')
+    ax.set_xlim([0, 0.35])
+    plt.grid()
+    if SHOW_FIG:
+        plt.show()
+    if SAVE_FIG:
+        plt.savefig('ComparisonPlots/ls_loss.png')
+    plt.close()
+
+    # long sec acc test bar plot
+    plt.rcdefaults()
+    fig, ax = plt.subplots()
+    y_pos = np.arange(len(avg_train_acc))
+    values = avg_ls_acc
+    error = std_ls_acc
+
+    ax.barh(y_pos, values, xerr=error, align='center')
+    ax.set_yticks(y_pos)
+    ax.set_yticklabels(mod_names)
+    ax.invert_yaxis()
+    ax.set_xlabel('Average accuracy')
+    ax.set_title('Average accuracy on long sequences')
+    ax.set_xlim([0, 1])
+    plt.grid()
+    if SHOW_FIG:
+        plt.show()
+    if SAVE_FIG:
+        plt.savefig('ComparisonPlots/ls_acc.png')
+    plt.close()
+
+def plot_words_attention(tokens, attention, idx, save_fig=False, show_fig=True):
+
+    plt.rcdefaults()
+    fig, ax = plt.subplots()
+    y_pos = np.arange(len(tokens))
+    values = attention.flatten()
+    error = np.zeros(len(tokens))
+
+    ax.barh(y_pos, values, xerr=error, align='center')
+    ax.set_yticks(y_pos)
+    ax.set_yticklabels(tokens)
+    ax.invert_yaxis()
+    ax.set_xlabel('Attention score')
+    ax.set_title('Word attention')
+    ax.set_xlim([0, 1])
+    plt.grid()
+    if show_fig:
+        plt.show()
+    if save_fig:
+        plt.savefig('ComparisonPlots/sentence_{}.png'.format(idx))
+    plt.close()
+
+def plot_length_influence(model_name, show_name):
+
+    step_size = 1
+    windows_size = 400
+    # Load data:
+    df = pd.read_csv(
+        'model/{}/lngts_logs.csv'.format(model_name), sep=',').to_numpy()
+
+    # sort the array
+    df = df[np.argsort(df[:, 0])]
+
+    acc = []
+    loss = []
+    size = []
+
+    start_idx = 0
+    end_idx = windows_size
+
+    while end_idx < df.shape[0]:
+
+        acc.append(np.mean(df[start_idx:end_idx, 2]))
+        loss.append(np.mean(df[start_idx:end_idx, 1]))
+        # 5 is the average number of characters in a work
+        size.append(np.mean(df[start_idx:end_idx, 0]) / 5)
+        start_idx += step_size
+        end_idx += step_size
+
+    acc.append(np.mean(df[start_idx:, 2]))
+    loss.append(np.mean(df[start_idx:, 1]))
+    size.append(np.mean(df[start_idx:, 0]) / 5)
+
+    fig, ax = plt.subplots()
+
+    ax.plot(size, loss, label='MSE', color='red', linewidth=0.5)
+    ax.set_ylabel('Loss', color='red')
+    ax.set_ylim([0.1, 0.25])
+    ax.legend(loc='center right')
+    ax2 = ax.twinx()
+    ax2.plot(size, acc, label='Accuracy', color='blue', linewidth=0.5)
+    ax2.set_ylabel('Accuracy', color='blue')
+    ax2.set_xlabel('Number of words')
+    ax2.legend()
+
+    plt.title('{}:\n Performances according to sequence length'.format(show_name))
+    if SHOW_FIG:
+        plt.show()
+    if SAVE_FIG:
+        plt.savefig(
+            'model/{}/{}_length_evaluator.png'.format(model_name, model_name))
+    plt.close()
 
 
 if __name__ == '__main__':
 
     model_list = [
-        ['LSTM_w2v_a', 'LSTM with Word2Vec and Attention'],
-        ['LSTM_glove_a', 'LSTM with Glove and Attention']
+        ['LSTM_w2v_a', 'LSTM with Word2Vec and Attention', 'LSTM\nW2V\nAttention'],
+        ['LSTM_glove_a', 'LSTM with Glove and Attention', 'LSTM\nGlove\nAttention'],
+        ['LSTM_glove_na', 'LSTM with Glove and no Attention', 'LSTM\nGlove\nNo Att'],
+        ['GRU_glove_a', 'GRU with Glove and Attention', 'GRU\nGlove\nAttention'],
+        ['GRU_glove_na', 'GRU with Glove and no Attention', 'GRU\nGlove\nNo Att'],
+        ['GRU_fasttext_a', 'GRU with FastText and Attention', 'GRU\nFT\nAttention'],
+        ['GRU_w2v_a', 'GRU with Word2Vec and Attention', 'GRU\nGlove\nAttention'],
+        ['LSTM_fasttext_a', 'LSTM with FastText and Attention', 'LSTM\nFT\nAttention']
     ]
 
     for md in model_list:
         plot_model(model_name=md[0], show_name=md[1])
+
+
+
+
+    compare_all_models(model_list)
+

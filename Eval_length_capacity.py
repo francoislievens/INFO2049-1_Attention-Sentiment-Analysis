@@ -110,7 +110,7 @@ def accuracy(pred, target):
 
 if __name__ == '__main__':
 
-    parameters = [
+    tmp = [
         {
             'name': 'LSTM_glove_a',
             'embedding': 'glove',
@@ -135,6 +135,34 @@ if __name__ == '__main__':
             'epoch': 3,
             'rnn_type': 'GRU',
             'use_attention': False
+        }
+    ]
+
+    parameters = [
+        {
+            'name': 'GRU_fasttext_a',
+            'embedding': 'fasttext',
+            'epoch': 3,
+            'rnn_type': 'GRU',
+            'use_attention': True
+        }, {
+            'name': 'GRU_w2v_a',
+            'embedding': 'word2vec',
+            'epoch': 3,
+            'rnn_type': 'GRU',
+            'use_attention': True
+        }, {
+            'name': 'LSTM_fasttext_a',
+            'embedding': 'fasttext',
+            'epoch': 3,
+            'rnn_type': 'LSTM',
+            'use_attention': True
+        }, {
+            'name': 'LSTM_w2v_a',
+            'embedding': 'word2vec',
+            'epoch': 3,
+            'rnn_type': 'LSTM',
+            'use_attention': True
         }
     ]
     for prm in parameters:

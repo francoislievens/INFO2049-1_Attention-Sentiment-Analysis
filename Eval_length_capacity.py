@@ -1,7 +1,13 @@
+"""
+This file contain the code used to evaluate the performances
+of all our models according the the length of the sequences.
+To do that, we are using the Large Movie Dataset and we compare
+the accuracy and the loss according to sequences length since this
+dataset contain largest text.
+"""
 import torch
 import os
 from tqdm import tqdm
-from torch.utils.tensorboard import SummaryWriter
 from DatasetPreparator import prepare_csv
 from torchtext.legacy.data import Field, TabularDataset, BucketIterator
 from Utils import evaluator, load_model, save_model, save_logs, save_length_logs
@@ -9,7 +15,6 @@ from CreateVocab import prepare_vocab, load_vocab
 from config import *
 from SentimentModel import SentimentModel
 
-import sys
 
 
 def eval_length_capacity(params):
@@ -110,40 +115,12 @@ def accuracy(pred, target):
 
 if __name__ == '__main__':
 
-    tmp = [
-        {
-            'name': 'LSTM_glove_a',
-            'embedding': 'glove',
-            'epoch': 3,
-            'rnn_type': 'LSTM',
-            'use_attention': True
-        }, {
-            'name': 'LSTM_glove_na',
-            'embedding': 'glove',
-            'epoch': 3,
-            'rnn_type': 'LSTM',
-            'use_attention': False
-        }, {
-            'name': 'GRU_glove_a',
-            'embedding': 'glove',
-            'epoch': 3,
-            'rnn_type': 'GRU',
-            'use_attention': True
-        }, {
-            'name': 'GRU_glove_na',
-            'embedding': 'glove',
-            'epoch': 3,
-            'rnn_type': 'GRU',
-            'use_attention': False
-        }
-    ]
-
     parameters = [
         {
-            'name': 'GRU_fasttext_a',
-            'embedding': 'fasttext',
+            'name': 'LSTM_w2v_a',
+            'embedding': 'word2vec',
             'epoch': 3,
-            'rnn_type': 'GRU',
+            'rnn_type': 'LSTM',
             'use_attention': True
         }, {
             'name': 'GRU_w2v_a',
@@ -152,17 +129,53 @@ if __name__ == '__main__':
             'rnn_type': 'GRU',
             'use_attention': True
         }, {
+            'name': 'LSTM_glove_a',
+            'embedding': 'glove',
+            'epoch': 3,
+            'rnn_type': 'LSTM',
+            'use_attention': True
+        }, {
             'name': 'LSTM_fasttext_a',
             'embedding': 'fasttext',
             'epoch': 3,
             'rnn_type': 'LSTM',
             'use_attention': True
         }, {
-            'name': 'LSTM_w2v_a',
-            'embedding': 'word2vec',
+            'name': 'GRU_glove_a',
+            'embedding': 'glove',
+            'epoch': 3,
+            'rnn_type': 'GRU',
+            'use_attention': True
+        }, {
+            'name': 'GRU_fasttext_a',
+            'embedding': 'fasttext',
+            'epoch': 3,
+            'rnn_type': 'GRU',
+            'use_attention': True
+        }, {
+            'name': 'LSTM_glove_na',
+            'embedding': 'glove',
             'epoch': 3,
             'rnn_type': 'LSTM',
-            'use_attention': True
+            'use_attention': False
+        }, {
+            'name': 'GRU_glove_na',
+            'embedding': 'glove',
+            'epoch': 3,
+            'rnn_type': 'GRU',
+            'use_attention': False
+        }, {
+            'name': 'LSTM_glove_na',
+            'embedding': 'glove',
+            'epoch': 3,
+            'rnn_type': 'LSTM',
+            'use_attention': False
+        }, {
+            'name': 'GRU_glove_na',
+            'embedding': 'glove',
+            'epoch': 3,
+            'rnn_type': 'GRU',
+            'use_attention': False
         }
     ]
     for prm in parameters:

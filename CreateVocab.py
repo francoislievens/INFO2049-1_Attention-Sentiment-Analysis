@@ -1,3 +1,8 @@
+"""
+This file contain the code that we used to create the vocabulary
+from our reference dataset and to import embedding vectors from
+each pre-trained embedding models
+"""
 from torchtext.legacy.data import Field, TabularDataset
 import pickle
 import sys

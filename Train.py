@@ -1,3 +1,6 @@
+"""
+This file contain the implementation of our training loop.
+"""
 import torch
 import os
 from tqdm import tqdm
@@ -8,10 +11,19 @@ from Utils import evaluator, load_model, save_model, save_logs
 from CreateVocab import prepare_vocab, load_vocab
 from config import *
 from SentimentModel import SentimentModel
-import sys
-
+from Eval_length_capacity import eval_length_capacity
 
 def train(parameters):
+    """
+    This Method takes as input a dictionary who contain the parameters
+    of the model that we want to train:
+         - 'name': a string with the name that we will be used to
+            save the model and associated logs
+         - 'embedding': can take as value 'word2vec', 'glove' or 'fasttext'
+         - 'epoch': The number of epoch that we want to performe
+         - 'rnn_type': Can be LSTM or GRU to determine the recurrent layer to use
+         - 'use_attention': Can be true or false if we dant to use attention or not
+    """
     p = parameters
     # If csv file not already prepared:
     if not os.path.exists('data/train.csv'):
@@ -173,6 +185,13 @@ def accuracy(pred, target):
 
 if __name__ == '__main__':
 
+    tmp = {
+            'name': 'LSTM_glove_na',
+            'embedding': 'glove',
+            'epoch': 3,
+            'rnn_type': 'LSTM',
+            'use_attention': False
+        }
     parameters = [
         {
             'name': 'LSTM_w2v_a',
@@ -222,10 +241,25 @@ if __name__ == '__main__':
             'epoch': 3,
             'rnn_type': 'GRU',
             'use_attention': False
+        }, {
+            'name': 'GRU_glove_na',
+            'embedding': 'glove',
+            'epoch': 3,
+            'rnn_type': 'GRU',
+            'use_attention': False
         }
     ]
+
+    # Training loop
     for prm in parameters:
         print('* --------------------------------------- *')
         print('*      Starting training {}'.format(prm['name']))
         print('* --------------------------------------- *')
         train(prm)
+
+    # Evaluate on long sequences
+    for prm in parameters:
+        print('* --------------------------------------- *')
+        print('*      Starting evaluating {}'.format(prm['name']))
+        print('* --------------------------------------- *')
+        eval_length_capacity(prm)

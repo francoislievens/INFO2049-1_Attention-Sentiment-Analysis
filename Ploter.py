@@ -1,9 +1,12 @@
+"""
+This file contain the implementation that we made
+in order to generate all data array and plots for
+evaluating model's performances and the report
+"""
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
-from pandas.core import series
 import os
-import time
 
 SHOW_FIG = False
 SAVE_FIG = True
@@ -448,6 +451,77 @@ def plot_length_influence(model_name, show_name):
         plt.savefig(
             'model/{}/{}_length_evaluator.png'.format(model_name, model_name))
     plt.close()
+
+
+def generate_performances_array(model_list):
+
+    outputs = np.zeros((len(model_list), 12))
+
+    for i in range(0, len(model_list)):
+        avg_train_loss = []
+        std_train_loss = []
+        avg_test_loss = []
+        std_test_loss = []
+        avg_train_acc = []
+        std_train_acc = []
+        avg_test_acc = []
+        std_test_acc = []
+        avg_ls_loss = []
+        std_ls_loss = []
+        avg_ls_acc = []
+        std_ls_acc = []
+
+        df_train = pd.read_csv('model/{}/train_logs.csv'.format(model_list[i][0]))
+        df_test = pd.read_csv('model/{}/test_logs.csv'.format(model_list[i][0]))
+
+        # Select last epoch values
+        df_train = df_train[df_train['Epoch'] >= LAST_EPOCH_IDX]
+        df_test = df_test[df_test['Epoch'] >= LAST_EPOCH_IDX]
+        # Get average and standard deviation
+
+        avg_train_loss.append(np.mean(df_train['loss'].to_numpy()))
+        std_train_loss.append(np.std(df_train['loss'].to_numpy()))
+        avg_train_acc.append(np.mean(df_train['accuracy'].to_numpy()))
+        std_train_acc.append(np.std(df_train['accuracy'].to_numpy()))
+        avg_test_loss.append(np.mean(df_test['loss'].to_numpy()))
+        std_test_loss.append(np.std(df_test['loss'].to_numpy()))
+        avg_test_acc.append(np.mean(df_test['accuracy'].to_numpy()))
+        std_test_acc.append(np.std(df_test['accuracy'].to_numpy()))
+
+        # For long sequences evaluation
+        df_lgt = pd.read_csv('model/{}/lngts_logs.csv'.format(mdl[0]))
+        # Sort by length
+        df_lgt = df_lgt.sort_values(by=['length']).to_numpy()
+        # Get 1000 longest
+        df_lgt = df_lgt[-1000:, :]
+
+        # Get average and std values
+        avg_ls_loss.append(np.mean(df_lgt[:, 1]))
+        std_ls_loss.append(np.std(df_lgt[:, 1])/2)
+        avg_ls_acc.append(np.mean(df_lgt[:, 2]))
+        std_ls_acc.append(np.std(df_lgt[:, 2])/2)
+
+    # Append in data array
+    outputs[:, 0] = avg_train_loss
+    outputs[:, 1] = std_train_loss
+    outputs[:, 2] = avg_train_acc
+    outputs[:, 3] = std_train_acc
+    outputs[:, 4] = avg_test_loss
+    outputs[:, 5] = std_test_loss
+    outputs[:, 6] = avg_test_acc
+    outputs[:, 7] = std_test_acc
+    outputs[:, 8] = avg_ls_loss
+    outputs[:, 9] = std_ls_loss
+    outputs[:, 10] = avg_ls_acc
+    outputs[:, 11] = std_ls_acc
+
+    file = open('ComparisonPlots/results_tab.csv')
+    for i in range(0, len(model_list)):
+        row_name = model_list[i][1]
+        row = outputs[i, :].tolist()
+        row_txt = ','.join(row)
+        final_row = '{},{}\n'.format(row_name, row_txt)
+        file.write(final_row)
 
 
 if __name__ == '__main__':

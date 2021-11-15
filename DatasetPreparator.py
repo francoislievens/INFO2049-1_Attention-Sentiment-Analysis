@@ -1,10 +1,12 @@
+"""
+The code in this file was used to pre-process the two
+datasets that we are using. The final format is a
+two-columns csv file
+"""
 import pandas as pd
 import numpy as np
 import os
 import pickle
-import sys
-import torchtext
-from torchtext.legacy.data import Field, TabularDataset, BucketIterator
 from tqdm import tqdm
 
 
@@ -127,7 +129,12 @@ def prepare_large_movie_data():
     f.close()
 
 if __name__ == '__main__':
-    # tweete_preparation()
 
-    # prepare_csv()
+    # Prepare the tweet dataset
+    tweete_preparation()
+
+    # Export to a csv from the pickle
+    prepare_csv()
+
+    # Prepare large movie dataset
     prepare_large_movie_data()

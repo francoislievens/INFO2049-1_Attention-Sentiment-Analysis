@@ -1,17 +1,19 @@
+"""
+This file contain the implementation of our attention classification
+model
+"""
 import torch
 from config import *
-import sys
-
 
 class SentimentModel(torch.nn.Module):
 
     def __init__(self,
-                 input_size,
-                 embed_size=300,
-                 name='Test',
-                 device='cpu',
-                 rnn_type='LSTM',
-                 use_attention=True):
+                 input_size,            # The size of the vocabulary used
+                 embed_size=300,        # The size of the embedding
+                 name='Test',           # The name to use for this model
+                 device='cpu',          # The device to use for computing
+                 rnn_type='LSTM',       # The RNN architecture to use
+                 use_attention=True):   # If we want to use the attention layer
         super(SentimentModel, self).__init__()
         self.use_attention = use_attention
         self.name = name
@@ -94,10 +96,22 @@ class SentimentModel(torch.nn.Module):
         # concatenate the two final states (since bi-directional lstm)
         # final_state = torch.cat((final_h_states[0:1, :, :], final_h_states[1:2, :, :]),
         #                        dim=2)
-        final_state = torch.cat((hid_states[:, -1:, self.hidden_size:],
-                                 hid_states[:, 0:1, 0:self.hidden_size]),
-                                dim=2)
-        final_state = final_state.reshape(N, -1, self.hidden_size * 2)
+        final_states = torch.permute(final_h_states, (1, 0, 2))
+        #final_state = torch.cat((hid_states[:, -1:, self.hidden_size:],
+        #                         hid_states[:, 0:1, 0:self.hidden_size]),
+        #                        dim=2)
+
+        # If We use the model without attention: direct final states to the feed forward
+        if not self.use_attention:
+            final_states = final_states.reshape(N, 2*self.hidden_size)
+            output = self.output_fc_A(final_states)
+            output = self.output_relu(output)
+            output = self.output_fc_B(output)
+            output = self.output_sig(output)
+            return output
+
+
+        final_state = final_states.reshape(N, -1, self.hidden_size * 2)
         # Repeat this sequence to math the sequence length
         final_state = final_state.repeat(1, lng, 1)
         # concatenate with all hidden states

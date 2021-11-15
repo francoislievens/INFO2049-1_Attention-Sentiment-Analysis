@@ -1,17 +1,23 @@
+"""
+The code in this file can be used to evaluate how our
+trained algorithm work on example sentences. Input text
+have to be written in Input/inputs.csv. For all sequences
+in this file, the sentiment prediction and the attention
+tensor are outputs. Also, plots with attention weights are
+builds according the the class variables selection
+"""
 import torch
-from torchtext.legacy.data import Field, TabularDataset, BucketIterator
-import pandas as pd
-import numpy as np
+from torchtext.legacy.data import Field, TabularDataset
 import os
-import sys
 from SentimentModel import SentimentModel
 from Utils import load_model
 from CreateVocab import load_vocab, prepare_vocab
 from Ploter import plot_words_attention
 
+# Put here the target model specification
 MODEL_NAME = 'LSTM_glove_a'
 DEVICE = 'cuda'
-EMBEDDING = 'fasttext'
+EMBEDDING = 'glove'
 MODEL_PATH = 'model'
 USE_ATTENTION = True
 FT_INPUT_SIZE = 100002

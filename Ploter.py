@@ -8,6 +8,7 @@ import time
 SHOW_FIG = True
 SAVE_FIG = False
 MAX_EPOCH = 3
+LAST_EPOCH_IDX = 2
 
 
 def plot_model(model_name, show_name):
@@ -196,7 +197,47 @@ def plot_length_influence(model_name, show_name):
             'model/{}/{}_length_evaluator.png'.format(model_name, model_name))
     plt.close()
 
+    def compare_all_models(models):
+        # Store average data for the last epoch of all models
+        avg_train_loss = []
+        std_train_loss = []
+        avg_test_loss = []
+        std_test_loss = []
+        avg_train_acc = []
+        std_train_acc = []
+        avg_test_acc = []
+        std_test_acc = []
+        avg_ls_loss = []
+        std_ls_loss = []
+        avg_ls_acc = []
+        std_ls_acc = []
 
+        for mdl in models:
+            df_train = pd.read_csv('model/{}/train_logs.csv'.format(mdl[0]))
+            df_test = pd.read_csv('model/{}/test_logs.csv'.format(mdl[0]))
+            # Select last epoch values
+            df_train = df_train[df_train['epoch'] >= LAST_EPOCH_IDX]
+            df_test = df_test[df_test['epoch'] >= LAST_EPOCH_IDX]
+            # Get average and standard deviation
+            avg_train_loss.append(np.mean(df_train['loss'].to_numpy()))
+            std_train_loss.append(np.std(df_train['loss'].to_numpy()))
+            avg_train_acc.append(np.mean(df_train['accuracy'].to_numpy()))
+            std_train_acc.append(np.std(df_train['accuracy'].to_numpy()))
+            avg_test_loss.append(np.mean(df_test['loss'].to_numpy()))
+            std_test_loss.append(np.std(df_test['loss'].to_numpy()))
+            avg_test_acc.append(np.mean(df_test['accuracy'].to_numpy()))
+            std_test_acc.append(np.std(df_test['accuracy'].to_numpy()))
+
+            # For long sequences evaluation
+            df_lgt = pd.read_csv('model/{}/lngts_logs.csv'.format(mdl[0]))
+            # Sort by length
+            df_lgt = df_lgt.sort_values(by=['length']).numpy()
+            # Get 1000 longest
+            df_lgt = df_lgt[-1000:, :]
+            print('Average length: {}'.format(np.mean(df_lgt[:, 0])))
+            # Get average and std values
+            avg_ls_loss = np.mean(df_lgt[:, 1])
+            std_ls_loss = np.std(df_lgt[:, 1])
 if __name__ == '__main__':
 
     model_list = [

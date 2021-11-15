@@ -9,22 +9,24 @@ SHOW_FIG = True
 SAVE_FIG = False
 MAX_EPOCH = 3
 
+
 def plot_model(model_name, show_name):
 
-    # Check if length evaluation data available:
-    if os.path.exists('model/{}/lngts_logs.csv'.format(model_name)):
-        plot_length_influence(model_name, show_name)
+    # # Check if length evaluation data available:
+    # if os.path.exists('model/{}/lngts_logs.csv'.format(model_name)):
+    #     plot_length_influence(model_name, show_name)
 
     # Chek if training data available:
     if os.path.exists('model/{}/train_logs.csv'.format(model_name)):
         plot_train_logs(model_name, show_name)
 
 
-
 def plot_train_logs(model_name, show_name):
 
-    train_logs = pd.read_csv('model/{}/train_logs.csv'.format(model_name), encoding='latin')
-    test_logs = pd.read_csv('model/{}/test_logs.csv'.format(model_name), encoding='latin')
+    train_logs = pd.read_csv(
+        'model/{}/train_logs.csv'.format(model_name), encoding='latin')
+    test_logs = pd.read_csv(
+        'model/{}/test_logs.csv'.format(model_name), encoding='latin')
     data_logs = [test_logs, train_logs]
     list_loss_logs_smooth = []
     list_acc_logs_smooth = []
@@ -48,17 +50,23 @@ def plot_train_logs(model_name, show_name):
         for i in range(len(data_logs[j]['loss'])):
             # if test
             if j == 0:
+                if i == len(data_logs[j]['loss'])-1:
+                    list_loss_logs_smooth += [np.mean(vec_loss_epoch)]
+                    list_acc_logs_smooth += [np.mean(vec_acc_epoch)]
+                    vec_loss_epoch = []
+                    vec_acc_epoch = []
+                    break
                 if data_logs[j]['Epoch'][i] == epoch:
+
                     vec_loss_epoch.append(data_logs[j]['loss'][i])
                     vec_acc_epoch.append(data_logs[j]['accuracy'][i])
                     # take into account last epoch
-                    if epoch == MAX_EPOCH-1:
-                        list_loss_logs_smooth += [np.mean(vec_loss_epoch)]
-                        list_acc_logs_smooth += [np.mean(vec_acc_epoch)]
-                        vec_loss_epoch = []
-                        vec_acc_epoch = []
-                        break
+                elif epoch == MAX_EPOCH-1:
+                    vec_loss_epoch.append(data_logs[j]['loss'][i])
+                    vec_acc_epoch.append(data_logs[j]['accuracy'][i])
+
                 else:
+
                     list_loss_logs_smooth += [np.mean(vec_loss_epoch)]
                     list_acc_logs_smooth += [np.mean(vec_acc_epoch)]
                     epoch += 1
@@ -91,6 +99,7 @@ def plot_train_logs(model_name, show_name):
 
     __plot__(list_loss, list_accuracy, model_name, show_name, epoch_indexes)
 
+
 def compute_mean_index(index, end):
     indexes = []
     start = 0
@@ -99,6 +108,7 @@ def compute_mean_index(index, end):
         start = index[i]
     indexes.append((index[-1]+end)/2)
     return indexes
+
 
 def __plot__(loss, acc, model_name, show_name, epoch_indexes):
 
@@ -120,7 +130,7 @@ def __plot__(loss, acc, model_name, show_name, epoch_indexes):
     ax2.set_ylabel("Accuracy", color="blue")
 
     ax2.plot(mean_epoch_indexes,
-            acc[0], color="green", linewidth=1, label="test accuracy")
+             acc[0], color="green", linewidth=1, label="test accuracy")
     ax2.set_ylim([0.6, 0.95])
     [plt.axvline(x=epoch_indexes[i], color='black', linestyle='-', label='epoch {}'.format(i+2))
      for i in range(0, len(epoch_indexes))]
@@ -128,17 +138,20 @@ def __plot__(loss, acc, model_name, show_name, epoch_indexes):
     ax2.legend(loc='lower right')
     plt.title('{}:\n Training curves'.format(show_name))
     if SAVE_FIG:
-        plt.savefig('model/{}/train_perfs_{}.png'.format(model_name, model_name))
+        plt.savefig(
+            'model/{}/train_perfs_{}.png'.format(model_name, model_name))
     if SHOW_FIG:
         plt.show()
     plt.close()
+
 
 def plot_length_influence(model_name, show_name):
 
     step_size = 1
     windows_size = 400
     # Load data:
-    df = pd.read_csv('model/{}/lngts_logs.csv'.format(model_name), sep=',').to_numpy()
+    df = pd.read_csv(
+        'model/{}/lngts_logs.csv'.format(model_name), sep=',').to_numpy()
 
     # sort the array
     df = df[np.argsort(df[:, 0])]
@@ -154,7 +167,8 @@ def plot_length_influence(model_name, show_name):
 
         acc.append(np.mean(df[start_idx:end_idx, 2]))
         loss.append(np.mean(df[start_idx:end_idx, 1]))
-        size.append(np.mean(df[start_idx:end_idx, 0]) / 5)      # 5 is the average number of characters in a work
+        # 5 is the average number of characters in a work
+        size.append(np.mean(df[start_idx:end_idx, 0]) / 5)
         start_idx += step_size
         end_idx += step_size
 
@@ -174,14 +188,13 @@ def plot_length_influence(model_name, show_name):
     ax2.set_xlabel('Number of words')
     ax2.legend()
 
-
     plt.title('{}:\n Performances according to sequence length'.format(show_name))
     if SHOW_FIG:
         plt.show()
     if SAVE_FIG:
-        plt.savefig('model/{}/{}_length_evaluator.png'.format(model_name, model_name))
+        plt.savefig(
+            'model/{}/{}_length_evaluator.png'.format(model_name, model_name))
     plt.close()
-
 
 
 if __name__ == '__main__':

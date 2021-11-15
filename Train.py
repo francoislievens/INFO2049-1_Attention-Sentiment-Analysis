@@ -11,9 +11,7 @@ from SentimentModel import SentimentModel
 import sys
 
 
-
 def train(parameters):
-
     p = parameters
     # If csv file not already prepared:
     if not os.path.exists('data/train.csv'):
@@ -120,8 +118,6 @@ def train(parameters):
             train_accuracy.append(acc.item())
             loop.set_postfix(loss=loss.item())
 
-
-
             if step % 500 == 0:
                 save_model(model, optimizer, MODEL_PATH, p['name'])
                 save_logs(i, train_loss, train_accuracy, MODEL_PATH, p['name'], 'train')
@@ -167,10 +163,7 @@ def train(parameters):
         save_logs(i, test_loss, test_accuracy, MODEL_PATH, p['name'], 'test')
 
 
-
-
 def accuracy(pred, target):
-
     rounded = torch.round(pred)
     # Get correct predictions
     accu = (rounded == target).sum() / pred.shape[0]
@@ -180,51 +173,57 @@ def accuracy(pred, target):
 
 if __name__ == '__main__':
 
-
-    parameters = [{
-        'name': 'GRU_glove',
-        'embedding': 'glove',
-        'epoch': 1,
-        'rnn_type': 'GRU'
-    }, {
-        'name': 'GRU_fasttext',
-        'embedding': 'fasttext',
-        'epoch': 1,
-        'rnn_type': 'GRU'
-    }, {
-        'name': 'LSTM_glove',
-        'embedding': 'glove',
-        'epoch': 1,
-        'rnn_type': 'LSTM'
-    }, {
-        'name': 'LSTM_fasttext',
-        'embedding': 'fasttext',
-        'epoch': 1,
-        'rnn_type': 'LSTM'
-    }, {
-        'name': 'LSTM_glove',
-        'embedding': 'glove',
-        'epoch': 5,
-        'rnn_type': 'LSTM'
-    }, {
-        'name': 'LSTM_fasttext',
-        'embedding': 'fasttext',
-        'epoch': 5,
-        'rnn_type': 'LSTM'
-    }, {
-        'name': 'GRU_glove',
-        'embedding': 'glove',
-        'epoch': 5,
-        'rnn_type': 'GRU'
-    }, {
-        'name': 'GRU_fasttext',
-        'embedding': 'fasttext',
-        'epoch': 5,
-        'rnn_type': 'GRU'
-    }
+    parameters = [
+        {
+            'name': 'LSTM_w2v_a',
+            'embedding': 'word2vec',
+            'epoch': 3,
+            'rnn_type': 'LSTM',
+            'use_attention': True
+        }, {
+            'name': 'GRU_w2v_a',
+            'embedding': 'word2vec',
+            'epoch': 3,
+            'rnn_type': 'GRU',
+            'use_attention': True
+        }, {
+            'name': 'LSTM_glove_a',
+            'embedding': 'glove',
+            'epoch': 3,
+            'rnn_type': 'LSTM',
+            'use_attention': True
+        }, {
+            'name': 'LSTM_fasttext_a',
+            'embedding': 'fasttext',
+            'epoch': 3,
+            'rnn_type': 'LSTM',
+            'use_attention': True
+        }, {
+            'name': 'GRU_glove_a',
+            'embedding': 'glove',
+            'epoch': 3,
+            'rnn_type': 'GRU',
+            'use_attention': True
+        }, {
+            'name': 'GRU_fasttext_a',
+            'embedding': 'fasttext',
+            'epoch': 3,
+            'rnn_type': 'GRU',
+            'use_attention': True
+        }, {
+            'name': 'LSTM_glove_na',
+            'embedding': 'glove',
+            'epoch': 3,
+            'rnn_type': 'LSTM',
+            'use_attention': False
+        }, {
+            'name': 'GRU_glove_na',
+            'embedding': 'glove',
+            'epoch': 3,
+            'rnn_type': 'GRU',
+            'use_attention': False
+        }
     ]
-
-    parameters
     for prm in parameters:
         print('* --------------------------------------- *')
         print('*      Starting training {}'.format(prm['name']))

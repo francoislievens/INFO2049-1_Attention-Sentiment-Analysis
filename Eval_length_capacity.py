@@ -110,10 +110,35 @@ def accuracy(pred, target):
 
 if __name__ == '__main__':
 
-    elem = {'name': 'LSTM_glove_a',
-           'embedding': 'glove',
-           'epoch': 2,
-           'rnn_type': 'LSTM',
-           'use_attention': True}
-
-    eval_length_capacity(elem)
+    parameters = [
+        {
+            'name': 'LSTM_glove_a',
+            'embedding': 'glove',
+            'epoch': 3,
+            'rnn_type': 'LSTM',
+            'use_attention': True
+        }, {
+            'name': 'LSTM_glove_na',
+            'embedding': 'glove',
+            'epoch': 3,
+            'rnn_type': 'LSTM',
+            'use_attention': False
+        }, {
+            'name': 'GRU_glove_a',
+            'embedding': 'glove',
+            'epoch': 3,
+            'rnn_type': 'GRU',
+            'use_attention': True
+        }, {
+            'name': 'GRU_glove_na',
+            'embedding': 'glove',
+            'epoch': 3,
+            'rnn_type': 'GRU',
+            'use_attention': False
+        }
+    ]
+    for prm in parameters:
+        print('* --------------------------------------- *')
+        print('*      Starting evaluating {}'.format(prm['name']))
+        print('* --------------------------------------- *')
+        eval_length_capacity(prm)

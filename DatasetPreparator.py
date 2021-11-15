@@ -99,7 +99,7 @@ def prepare_large_movie_data():
     lgt = []
     for i in range(len(text)):
         lgt.append(len(text[i]))
-        if i > 10000:
+        if i > 100000:
             break
     lgt = np.array(lgt)
     idx_array = np.arange(len(lgt))

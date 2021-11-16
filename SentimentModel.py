@@ -20,6 +20,7 @@ class SentimentModel(torch.nn.Module):
         self.embed_size = embed_size
         self.device = device
         self.hidden_size = HIDDEN_SIZE
+        self.rnn_type = rnn_type
 
         # The embedding layer
         self.embed_layer = torch.nn.Embedding(input_size, embed_size)
@@ -96,7 +97,11 @@ class SentimentModel(torch.nn.Module):
         # concatenate the two final states (since bi-directional lstm)
         # final_state = torch.cat((final_h_states[0:1, :, :], final_h_states[1:2, :, :]),
         #                        dim=2)
-        final_states = torch.permute(final_h_states, (1, 0, 2))
+        if self.rnn_type == 'LSTM':
+            final_states = torch.permute(final_h_states, (1, 0, 2))
+        if self.rnn_type == 'GRU':
+            final_states = torch.cat((final_h_states, final_h_states), dim=1)
+
         #final_state = torch.cat((hid_states[:, -1:, self.hidden_size:],
         #                         hid_states[:, 0:1, 0:self.hidden_size]),
         #                        dim=2)
@@ -130,10 +135,6 @@ class SentimentModel(torch.nn.Module):
 
         # Reshape for the weighted average
         att = att.reshape(N, lng, 1)
-
-        # Use equal weights if no attention
-        if not self.use_attention:
-            att = torch.ones(att.shape).to(self.device) / att.shape[1]
 
         # Apply attention weights on hidden states
         context = torch.einsum('nsk,nsl->nkl', att, hid_states).reshape(N, self.hidden_size * 2)

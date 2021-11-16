@@ -258,7 +258,7 @@ def compare_all_models(models):
 
     ax.barh(y_pos, values, xerr=error, align='center')
     ax.set_yticks(y_pos)
-    ax.set_yticklabels(mod_names)
+    ax.set_yticklabels(mod_names)                  # add fontsize=12  ==========================================================
     ax.invert_yaxis()
     ax.set_xlabel('Average train accuracy')
     ax.set_title('Average train accuracy \n'
@@ -537,11 +537,12 @@ if __name__ == '__main__':
         ['LSTM_fasttext_a', 'LSTM with FastText and Attention', 'LSTM\nFT\nAttention']
     ]
 
+    model_list = [['LSTM_glove_na', 'LSTM with Glove and no Attention', 'LSTM\nGlove\nNo Att']]
     for md in model_list:
         plot_model(model_name=md[0], show_name=md[1])
 
 
 
 
-    compare_all_models(model_list)
+    #compare_all_models(model_list)
 

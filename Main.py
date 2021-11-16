@@ -6,10 +6,16 @@ from Ploter import generate_performances_array
 
 
 
-if __name__ == '__main':
+if __name__ == '__main__':
 
     # The dictionary who contain the description of all models that we want to create, train and evaluate
     tmp = {
+            'name': 'LSTM_w2v_a',
+            'embedding': 'word2vec',
+            'epoch': 3,
+            'rnn_type': 'LSTM',
+            'use_attention': True
+        }, {
             'name': 'LSTM_glove_na',
             'embedding': 'glove',
             'epoch': 3,
@@ -18,12 +24,6 @@ if __name__ == '__main':
         }
     parameters = [
         {
-            'name': 'LSTM_w2v_a',
-            'embedding': 'word2vec',
-            'epoch': 3,
-            'rnn_type': 'LSTM',
-            'use_attention': True
-        }, {
             'name': 'GRU_w2v_a',
             'embedding': 'word2vec',
             'epoch': 3,
@@ -68,6 +68,58 @@ if __name__ == '__main':
         print('*      Starting training {}'.format(prm['name']))
         print('* --------------------------------------- *')
         train(prm)
+
+    parameters = [
+        {
+            'name': 'GRU_w2v_a',
+            'embedding': 'word2vec',
+            'epoch': 3,
+            'rnn_type': 'GRU',
+            'use_attention': True
+        }, {
+            'name': 'LSTM_glove_a',
+            'embedding': 'glove',
+            'epoch': 3,
+            'rnn_type': 'LSTM',
+            'use_attention': True
+        }, {
+            'name': 'LSTM_fasttext_a',
+            'embedding': 'fasttext',
+            'epoch': 3,
+            'rnn_type': 'LSTM',
+            'use_attention': True
+        }, {
+            'name': 'GRU_glove_a',
+            'embedding': 'glove',
+            'epoch': 3,
+            'rnn_type': 'GRU',
+            'use_attention': True
+        }, {
+            'name': 'GRU_fasttext_a',
+            'embedding': 'fasttext',
+            'epoch': 3,
+            'rnn_type': 'GRU',
+            'use_attention': True
+        }, {
+            'name': 'GRU_glove_na',
+            'embedding': 'glove',
+            'epoch': 3,
+            'rnn_type': 'GRU',
+            'use_attention': False
+        }, {
+            'name': 'LSTM_w2v_a',
+            'embedding': 'word2vec',
+            'epoch': 3,
+            'rnn_type': 'LSTM',
+            'use_attention': True
+        }, {
+            'name': 'LSTM_glove_na',
+            'embedding': 'glove',
+            'epoch': 3,
+            'rnn_type': 'LSTM',
+            'use_attention': False
+        }
+    ]
 
     # Evaluate on long sequences
     for prm in parameters:

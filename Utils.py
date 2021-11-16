@@ -2,6 +2,7 @@ import torch
 import pandas as pd
 import os
 import sys
+import numpy as np
 
 def evaluator(token_idx, vocab, pred, attention, target):
 
@@ -82,4 +83,22 @@ def save_length_logs(lgts, loss, accuracy, model_path, model_name):
                                     loss[i],
                                     accuracy[i]))
     f.close()
+
+def avg_smoothing(seq, window_size):
+
+    start_idx = 0
+    end_idx = window_size
+    target_idx = int(window_size / 2)
+    output = seq.copy()
+
+    while end_idx < len(seq):
+        output[target_idx] = np.mean(seq[start_idx:end_idx])
+        start_idx += 1
+        end_idx += 1
+        target_idx += 1
+
+    return output
+
+
+
 

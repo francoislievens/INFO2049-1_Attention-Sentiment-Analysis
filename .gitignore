@@ -1,5 +1,9 @@
 
-*.txt
+.vector_cache/
+.vector_cache_bis/
+acllmdb/
+LargeMovieV1/
+tweete/
 *.pt
 *.zip
 *.vec

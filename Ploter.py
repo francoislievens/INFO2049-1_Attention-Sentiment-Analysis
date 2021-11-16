@@ -7,6 +7,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 import os
+from Utils import avg_smoothing, get_epoch_idx
+import sys
 
 SHOW_FIG = False
 SAVE_FIG = True
@@ -258,7 +260,7 @@ def compare_all_models(models):
 
     ax.barh(y_pos, values, xerr=error, align='center')
     ax.set_yticks(y_pos)
-    ax.set_yticklabels(mod_names)                  # add fontsize=12  ==========================================================
+    ax.set_yticklabels(mod_names, fontsize=8)
     ax.invert_yaxis()
     ax.set_xlabel('Average train accuracy')
     ax.set_title('Average train accuracy \n'
@@ -280,7 +282,7 @@ def compare_all_models(models):
 
     ax.barh(y_pos, values, xerr=error, align='center')
     ax.set_yticks(y_pos)
-    ax.set_yticklabels(mod_names)
+    ax.set_yticklabels(mod_names, fontsize=8)
     ax.invert_yaxis()
     ax.set_xlabel('Average test accuracy')
     ax.set_title('Average test accuracy \n'
@@ -302,7 +304,7 @@ def compare_all_models(models):
 
     ax.barh(y_pos, values, xerr=error, align='center')
     ax.set_yticks(y_pos)
-    ax.set_yticklabels(mod_names)
+    ax.set_yticklabels(mod_names, fontsize=8)
     ax.invert_yaxis()
     ax.set_xlabel('Average test loss')
     ax.set_title('Average test loss \n'
@@ -324,7 +326,7 @@ def compare_all_models(models):
 
     ax.barh(y_pos, values, xerr=error, align='center')
     ax.set_yticks(y_pos)
-    ax.set_yticklabels(mod_names)
+    ax.set_yticklabels(mod_names, fontsize=8)
     ax.invert_yaxis()
     ax.set_xlabel('Average train loss')
     ax.set_title('Average train loss \n'
@@ -346,7 +348,7 @@ def compare_all_models(models):
 
     ax.barh(y_pos, values, xerr=error, align='center')
     ax.set_yticks(y_pos)
-    ax.set_yticklabels(mod_names)
+    ax.set_yticklabels(mod_names, fontsize=8)
     ax.invert_yaxis()
     ax.set_xlabel('Average loss')
     ax.set_title('Average loss on long sequences')
@@ -367,7 +369,7 @@ def compare_all_models(models):
 
     ax.barh(y_pos, values, xerr=error, align='center')
     ax.set_yticks(y_pos)
-    ax.set_yticklabels(mod_names)
+    ax.set_yticklabels(mod_names, fontsize=8)
     ax.invert_yaxis()
     ax.set_xlabel('Average accuracy')
     ax.set_title('Average accuracy on long sequences')
@@ -457,19 +459,20 @@ def generate_performances_array(model_list):
 
     outputs = np.zeros((len(model_list), 12))
 
+    avg_train_loss = []
+    std_train_loss = []
+    avg_test_loss = []
+    std_test_loss = []
+    avg_train_acc = []
+    std_train_acc = []
+    avg_test_acc = []
+    std_test_acc = []
+    avg_ls_loss = []
+    std_ls_loss = []
+    avg_ls_acc = []
+    std_ls_acc = []
     for i in range(0, len(model_list)):
-        avg_train_loss = []
-        std_train_loss = []
-        avg_test_loss = []
-        std_test_loss = []
-        avg_train_acc = []
-        std_train_acc = []
-        avg_test_acc = []
-        std_test_acc = []
-        avg_ls_loss = []
-        std_ls_loss = []
-        avg_ls_acc = []
-        std_ls_acc = []
+
 
         df_train = pd.read_csv('model/{}/train_logs.csv'.format(model_list[i][0]))
         df_test = pd.read_csv('model/{}/test_logs.csv'.format(model_list[i][0]))
@@ -489,7 +492,7 @@ def generate_performances_array(model_list):
         std_test_acc.append(np.std(df_test['accuracy'].to_numpy()))
 
         # For long sequences evaluation
-        df_lgt = pd.read_csv('model/{}/lngts_logs.csv'.format(mdl[0]))
+        df_lgt = pd.read_csv('model/{}/lngts_logs.csv'.format(model_list[i][0]))
         # Sort by length
         df_lgt = df_lgt.sort_values(by=['length']).to_numpy()
         # Get 1000 longest
@@ -502,29 +505,167 @@ def generate_performances_array(model_list):
         std_ls_acc.append(np.std(df_lgt[:, 2])/2)
 
     # Append in data array
-    outputs[:, 0] = avg_train_loss
-    outputs[:, 1] = std_train_loss
-    outputs[:, 2] = avg_train_acc
-    outputs[:, 3] = std_train_acc
-    outputs[:, 4] = avg_test_loss
-    outputs[:, 5] = std_test_loss
-    outputs[:, 6] = avg_test_acc
-    outputs[:, 7] = std_test_acc
-    outputs[:, 8] = avg_ls_loss
-    outputs[:, 9] = std_ls_loss
-    outputs[:, 10] = avg_ls_acc
-    outputs[:, 11] = std_ls_acc
+    outputs[:, 0] = np.array(avg_train_loss)
+    outputs[:, 1] = np.array(std_train_loss)
+    outputs[:, 2] = np.array(avg_train_acc)
+    outputs[:, 3] = np.array(std_train_acc)
+    outputs[:, 4] = np.array(avg_test_loss)
+    outputs[:, 5] = np.array(std_test_loss)
+    outputs[:, 6] = np.array(avg_test_acc)
+    outputs[:, 7] = np.array(std_test_acc)
+    outputs[:, 8] = np.array(avg_ls_loss)
+    outputs[:, 9] = np.array(std_ls_loss)
+    outputs[:, 10] = np.array(avg_ls_acc)
+    outputs[:, 11] = np.array(std_ls_acc)
 
-    file = open('ComparisonPlots/results_tab.csv')
+    file = open('ComparisonPlots/results_tab.csv', 'w')
     for i in range(0, len(model_list)):
         row_name = model_list[i][1]
         row = outputs[i, :].tolist()
-        row_txt = ','.join(row)
+        str_row = []
+        for itm in row:
+            str_row.append(str(itm))
+        row_txt = ','.join(str_row)
         final_row = '{},{}\n'.format(row_name, row_txt)
         file.write(final_row)
+    file.close()
+
+def compare_rnn_loss(model_list):
+
+    smoothing_widow = 1000
+    alf_window = int(smoothing_widow / 2)
+
+    fig, ax = plt.subplots()
+    ax2 = ax.twinx()
+
+    colors = [
+        'blue',
+        'green',
+        'orange',
+        'magenta',
+        'pink',
+        'yellow',
+        'aqua',
+        'brown',
+        'khaki'
+    ]
+    idx = 0
+    epoch_idx = []
+    for mod in model_list:
+        if 'LSTM' in mod[0] or 'GRU' in mod[0] or True:
+            df = pd.read_csv('model/{}/train_logs.csv'.format(mod[0]))
+            # Loss
+            loss = df['loss'].to_numpy()
+            loss = avg_smoothing(loss, smoothing_widow)
+            loss = loss[alf_window:-alf_window]
+            ax.plot(np.arange(len(loss)), loss,
+                    label='{}'.format(mod[2].replace('\n', ' ')),
+                    linewidth=0.3,
+                    color=colors[idx])
+            # Accuracy:
+            acc = df['accuracy'].to_numpy()
+            acc = avg_smoothing(acc, smoothing_widow)
+            acc = acc[alf_window:-alf_window]
+            ax2.plot(np.arange(len(acc)), acc,
+                     label='{}'.format(mod[2].replace('\n', ' ')),
+                     linewidth=0.3,
+                     color=colors[idx])
+            if idx == 0:
+                epoch_idx = get_epoch_idx(df['Epoch'].to_numpy())
+
+            idx += 1
+    # add vertical lines for epochs
+    [plt.axvline(x=epoch_idx[i], color='black', linestyle='-', label='epoch {}'.format(i+2))
+     for i in range(0, len(epoch_idx))]
+    plt.legend(loc='center right')
+    plt.title('Training logs')
+    ax.set_xlabel('Batch')
+    ax.set_ylabel('Loss')
+    ax2.set_ylabel('Accuracy')
+    #ax.legend(loc='center right')
+    ax.set_ylim([0.1, 0.2])
+    if SHOW_FIG:
+        plt.show()
+    if SAVE_FIG:
+        plt.savefig('ComparisonPlots/Comparison_training_perfos.png')
+    plt.close()
+
+def compare_attention():
+
+    with_att = 'GRU_glove_a'
+    without_att = 'GRU_glove_na'
+
+    step_size = 1
+    windows_size = 400
+    # Load data:
+    df_att = pd.read_csv(
+        'model/{}/lngts_logs.csv'.format(with_att), sep=',').to_numpy()
+    df_no_att = pd.read_csv(
+        'model/{}/lngts_logs.csv'.format(without_att), sep=',').to_numpy()
+    # sort the array
+    df_att = df_att[np.argsort(df_att[:, 0])]
+    df_no_att = df_no_att[np.argsort(df_no_att[:, 0])]
+
+    acc_att = []
+    loss_att = []
+    size = []
+
+    acc_no_att = []
+    loss_no_att = []
+
+    start_idx = 0
+    end_idx = windows_size
+
+    while end_idx < df_att.shape[0]:
+
+        acc_att.append(np.mean(df_att[start_idx:end_idx, 2]))
+        loss_att.append(np.mean(df_att[start_idx:end_idx, 1]))
+        acc_no_att.append(np.mean(df_no_att[start_idx:end_idx, 2]))
+        loss_no_att.append(np.mean(df_no_att[start_idx:end_idx, 1]))
+
+        # 5 is the average number of characters in a work
+        size.append(np.mean(df_no_att[start_idx:end_idx, 0]) / 5)
+        start_idx += step_size
+        end_idx += step_size
+
+    acc_att.append(np.mean(df_att[start_idx:, 2]))
+    loss_att.append(np.mean(df_att[start_idx:, 1]))
+    acc_no_att.append(np.mean(df_no_att[start_idx:, 2]))
+    loss_no_att.append(np.mean(df_no_att[start_idx:, 1]))
+    size.append(np.mean(df_att[start_idx:, 0]) / 5)
+
+    # average smoothing
+    window_size = 1000
+    acc_att = avg_smoothing(acc_att, window_size)
+    acc_no_att = avg_smoothing(acc_no_att, window_size)
+    loss_att = avg_smoothing(loss_att, window_size)
+    loss_no_att = avg_smoothing(loss_no_att, window_size)
+    fig, ax = plt.subplots()
+
+    ax.plot(size, loss_att, label='GRU with attention', color='red', linewidth=1)
+    ax.plot(size, loss_no_att, label='GRU without attention', color='green', linewidth=1)
+    ax.set_ylabel('Loss', color='red')
+    ax.set_xlabel('Number of input tokens')
+    #ax.set_ylim([0.1, 0.25])
+    ax.legend(loc='center right')
+    ax2 = ax.twinx()
+    ax2.plot(size, acc_att, label='Accuracy with attention', color='blue', linewidth=1)
+    ax2.plot(size, acc_no_att, label='Accuracy without attention', color='purple', linewidth=1)
+    ax2.set_ylabel('Accuracy', color='blue')
+    ax2.set_xlabel('Number of words')
+    ax2.legend()
+
+    plt.title('GRU/glove model\nAttention effect on long sequences')
+    if SHOW_FIG:
+        plt.show()
+    if SAVE_FIG:
+        plt.savefig(
+            'ComparisonPlots/GRU_Glove_Attention_effect.png')
+    plt.close()
 
 
 if __name__ == '__main__':
+
 
     model_list = [
         ['LSTM_w2v_a', 'LSTM with Word2Vec and Attention', 'LSTM\nW2V\nAttention'],
@@ -536,13 +677,15 @@ if __name__ == '__main__':
         ['GRU_w2v_a', 'GRU with Word2Vec and Attention', 'GRU\nGlove\nAttention'],
         ['LSTM_fasttext_a', 'LSTM with FastText and Attention', 'LSTM\nFT\nAttention']
     ]
+    generate_performances_array(model_list)
 
-    model_list = [['LSTM_glove_na', 'LSTM with Glove and no Attention', 'LSTM\nGlove\nNo Att']]
+    compare_rnn_loss(model_list)
+
     for md in model_list:
         plot_model(model_name=md[0], show_name=md[1])
 
 
 
 
-    #compare_all_models(model_list)
+    compare_all_models(model_list)
 

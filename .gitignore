@@ -6,8 +6,7 @@
 *.vocab
 *.feat
 tweete/
-tweet_test.csv
-tweet_train.csv
+data/
 *.vectors
 *.gz
 plot/model

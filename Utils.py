@@ -89,16 +89,30 @@ def avg_smoothing(seq, window_size):
     start_idx = 0
     end_idx = window_size
     target_idx = int(window_size / 2)
-    output = seq.copy()
+    output = np.zeros(len(seq) + window_size)
+    for i in range(int(window_size/2)):
+        output[i] = seq[0]
+        output[-i] = seq[-1]
+    output[int(window_size/2):int(window_size/2)+len(seq)] = seq
 
-    while end_idx < len(seq):
+    while end_idx < len(output):
         output[target_idx] = np.mean(seq[start_idx:end_idx])
         start_idx += 1
         end_idx += 1
         target_idx += 1
 
-    return output
+    return output[int(window_size/2): int(window_size/2)+len(seq)]
 
+def get_epoch_idx(seq):
+
+    epoch_idx = []
+    start_epoch = 0
+    for i in range(len(seq)):
+        if seq[i] > start_epoch:
+            epoch_idx.append(i)
+            start_epoch = seq[i]
+
+    return epoch_idx
 
 
 
